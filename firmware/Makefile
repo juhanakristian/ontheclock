@@ -1,7 +1,7 @@
 baud=57600 # Nano (old bootloader)
 avr=atmega328p
 freq=16000000
-dev=/dev/tty.usbserial-1110
+dev=/dev/tty.usbserial-1310
 programmer=arduino
 
 cflags=-DF_CPU=$(freq) -mmcu=$(avr) -Wall -Werror -Wextra -Os -std=c++11
