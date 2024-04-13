@@ -10,6 +10,8 @@ extern "C" {
 #include "uart.h"
 }
 
+#include "lcd.h"
+
 const static uint8_t BPM_POT = 7;
 const static uint8_t BPM_MAX = 200;
 const static uint8_t BPM_MIN = 30;
@@ -27,7 +29,7 @@ void init_encoder() {
     encoder.init();
 }
 
-volatile uint8_t bpm = 0;
+volatile uint8_t bpm = 60;
 
 int main(void) {
     // Enabled USART and redirect standard input/output to UART
@@ -44,7 +46,11 @@ int main(void) {
 
     init_encoder();
 
+    lcd_init(LCD_DISP_ON);
+    lcd_charMode(DOUBLESIZE);
+
     while (1) {
+        printf("BPM %i\n", bpm);
         if (counter > (60000 / bpm / 2 / 10)) {
             if (PORTD & (1 << PD3)) {
                 PORTD &= ~_BV(PD3);
@@ -57,6 +63,11 @@ int main(void) {
         counter++;
 
         _delay_ms(10);
+
+        char text[4];
+        sprintf(text, "%i", bpm);
+        lcd_clrscr();
+        lcd_puts(text);
     }
 }
 

@@ -1,27 +1,33 @@
-baud=57600 # Nano (old bootloader)
-avr=atmega328p
-freq=16000000
-dev=/dev/tty.usbserial-1110
-programmer=arduino
+BAUD=57600 # Nano (old bootloader)
+AVR=atmega328p
+FREQ=16000000
+DEV=/dev/tty.usbserial-1110
+PROGRAMMER=arduino
 
-cflags=-DF_CPU=$(freq) -mmcu=$(avr) -Wall -Werror -Wextra -Os -std=c++11
-objects=$(patsubst %.cc,%.o,$(wildcard *.cpp))
+FLAGS=-DF_CPU=$(FREQ) -mmcu=$(AVR) -Wall -Werror -Wextra -Os
+CFLAGS=$(FLAGS) -Wno-multichar -Wno-overflow -Wno-unknown-pragmas -Wno-type-limits -Wno-sign-compare -std=gnu99
+CPPFLAGS=$(FLAGS) -std=c++11
+
+OBJECTS=$(patsubst %.cpp,%.o,$(wildcard *.cpp)) $(patsubst %.c,%.o,$(wildcard *.c))
 
 .PHONY: flash clean
 
 all: main.hex
 
-%.o: %.cc
-	avr-gcc $(cflags) -c $< -o $@
+%.o: %.cpp
+	avr-gcc $(CPPFLAGS) -c $< -o $@
 
-main.elf: $(objects)
-	avr-gcc $(cflags) -o $@ $^
+%.o: %.c
+	avr-gcc $(CFLAGS) -c $< -o $@
+
+main.elf: $(OBJECTS)
+	avr-gcc $(CFLAGS) -o $@ $^
 
 main.hex: main.elf
 	avr-objcopy -j .text -j .data -O ihex $^ $@
 
 flash: main.hex
-	avrdude -p$(avr) -c$(programmer) -P$(dev) -b$(baud) -v -U flash:w:$<
+	avrdude -p$(AVR) -c$(PROGRAMMER) -P$(DEV) -b$(BAUD) -v -U flash:w:$<
 
 clean:
-	rm -f main.hex main.elf $(objects)
+	rm -f main.hex main.elf $(OBJECTS)
